@@ -1,0 +1,5 @@
+podman exec -it nestjs-pets_redis_1 redis-cli -a yourStrongPassword FLUSHALL
+
+npm run migrate:reset:local
+./prisma-local.sh npx prisma studio
+podman logs $(podman ps -a --filter name=nestjs-pets_app-svc_1 --format '{{.ID}}')
