@@ -19,35 +19,31 @@ export class OwnersService {
   ) {}
 
   async findAll(): Promise<OwnerBasicDto[]> {
-    this.logger.withContext(OwnersService.name).log('Fetching all owners');
-    const cached = await this.cache.get<OwnerBasicDto>(this.constructor, 0);
-    if (cached) return plainToInstance(OwnerBasicDto, cached);
-
-    // Use PrismaService as PrismaClient
+    this.logger.withContext(OwnersService.name).log('Fetching all owners (no cache)');
     const owners = await this.prisma.owner.findMany({ include: { pets: true } });
-    this.logger.withContext(OwnersService.name).log('Fetched owners from DB', OwnersService.name);
+    this.logger.withContext(OwnersService.name).log('[Debug] OwnerBasicDto[] for all from DB:', JSON.stringify(owners));
     const mapped = this.mapper.mapArray(owners, Object, OwnerBasicDto);
-    this.logger.withContext(OwnersService.name).log('Mapped owners', OwnersService.name);
-    await this.cache.set<OwnerBasicDto>(this.constructor, 'all', mapped);
+    this.logger.withContext(OwnersService.name).log('[Debug] Mapped OwnerBasicDto[] for all:', JSON.stringify(mapped));
     return mapped;
   }
 
   async findOne(id: number): Promise<OwnerBasicDto | null> {
     this.logger.withContext(OwnersService.name).log(`Fetching owner with id ${id}`);
-    const cached = await this.cache.get<OwnerBasicDto>(this.constructor, id);
-    // Debug: log cached value before hydration
+    const cached = await this.cache.get<OwnerBasicDto>(OwnersService, id);
     this.logger.withContext(OwnersService.name).log(`[Debug] Cached value for id ${id}:`, JSON.stringify(cached));
     if (cached && cached.length > 0) {
       const hydrated = plainToInstance(OwnerBasicDto, cached)[0];
-      // Debug: log hydrated DTO
-      this.logger.withContext(OwnersService.name).log(`[Debug] Hydrated DTO for id ${id}:`, JSON.stringify(hydrated));
+      this.logger.withContext(OwnersService.name).log(`[Debug] Hydrated DTO for id ${id} from cache:`, JSON.stringify(hydrated));
       return hydrated;
     }
 
     // Use PrismaService as PrismaClient
     const owner = await this.prisma.owner.findUnique({ where: { id }, include: { pets: true } });
     if (!owner) return null;
+    this.logger.withContext(OwnersService.name).log(`[Debug] OwnerBasicDto for id ${id} from DB:`, JSON.stringify(owner));
     const mapped = this.mapper.map(owner, Object, OwnerBasicDto);
+    this.logger.withContext(OwnersService.name).log(`[Debug] Mapped OwnerBasicDto for id ${id}:`, JSON.stringify(mapped));
+    await this.cache.set<OwnerBasicDto>(OwnersService, id, [mapped]);
     return mapped;
   }
 
@@ -55,25 +51,36 @@ export class OwnersService {
     this.logger.withContext(OwnersService.name).log(
       `Fetching owners with lastName=${lastName}, firstName=${firstName}`
     );
-    // Optionally cache by lastName only if firstName is not provided
-    if (!firstName) {
-      const cached = await this.cache.get<OwnerBasicDto>(this.constructor, lastName);
-      if (cached) return plainToInstance(OwnerBasicDto, cached);
-      const where: Record<string, unknown> = { lastName };
-      const owners = await this.prisma.owner.findMany({ where, include: { pets: true } });
-      const mapped = this.mapper.mapArray(owners, Object, OwnerBasicDto);
-      await this.cache.set<OwnerBasicDto>(this.constructor, lastName, mapped);
-      return mapped;
+    const cacheKey = `lastName:${lastName}`;
+    const cached = await this.cache.get<OwnerBasicDto>(OwnersService, cacheKey);
+    if (cached) {
+      const hydrated = plainToInstance(OwnerBasicDto, cached);
+      this.logger.withContext(OwnersService.name).log(`[Debug] Hydrated OwnerBasicDto[] for ${cacheKey} from cache:`, JSON.stringify(hydrated));
+      if (firstName) {
+        const filtered = hydrated.filter(o => o.firstName === firstName);
+        this.logger.withContext(OwnersService.name).log(`[Debug] Filtered OwnerBasicDto[] for ${cacheKey} with firstName=${firstName}:`, JSON.stringify(filtered));
+        // If cache hit but no match for firstName, do not query DB, just return []
+        return filtered;
+      }
+      return hydrated;
     }
-    // If firstName is provided, do not cache (or implement a composite key if desired)
-    const where: Record<string, unknown> = { lastName, firstName };
+    // Cache miss: query DB by lastName only
+    const where: Record<string, unknown> = { lastName };
     const owners = await this.prisma.owner.findMany({ where, include: { pets: true } });
-    return this.mapper.mapArray(owners, Object, OwnerBasicDto);
+    this.logger.withContext(OwnersService.name).log(`[Debug] OwnerBasicDto[] for ${cacheKey} from DB:`, JSON.stringify(owners));
+    const mapped = this.mapper.mapArray(owners, Object, OwnerBasicDto);
+    this.logger.withContext(OwnersService.name).log(`[Debug] Mapped OwnerBasicDto[] for ${cacheKey}:`, JSON.stringify(mapped));
+    await this.cache.set<OwnerBasicDto>(OwnersService, cacheKey, mapped);
+    if (firstName) {
+      const filtered = mapped.filter(o => o.firstName === firstName);
+      this.logger.withContext(OwnersService.name).log(`[Debug] Filtered OwnerBasicDto[] for ${cacheKey} with firstName=${firstName} (from DB):`, JSON.stringify(filtered));
+      return filtered;
+    }
+    return mapped;
   }
 
   async findFullById(id: number): Promise<OwnerFullDto | null> {
     this.logger.withContext(OwnersService.name).log(`Fetching full owner with id ${id}`);
-    // Fetch owner with all pets and each pet's boosters and brendanCane
     const owner = await this.prisma.owner.findUnique({
       where: { id },
       include: {
@@ -87,7 +94,10 @@ export class OwnersService {
       },
     });
     if (!owner) return null;
-    return this.fullMapper.map(owner, Object, OwnerFullDto);
+    this.logger.withContext(OwnersService.name).log(`[Debug] OwnerFullDto for id ${id} from DB:`, JSON.stringify(owner));
+    const mapped = this.fullMapper.map(owner, Object, OwnerFullDto);
+    this.logger.withContext(OwnersService.name).log(`[Debug] Mapped OwnerFullDto for id ${id}:`, JSON.stringify(mapped));
+    return mapped;
   }
 
   async findFullByName(lastName: string, firstName?: string): Promise<OwnerFullDto[]> {
@@ -108,6 +118,9 @@ export class OwnersService {
         },
       },
     });
-    return this.fullMapper.mapArray(owners, Object, OwnerFullDto);
+    this.logger.withContext(OwnersService.name).log(`[Debug] OwnerFullDto[] for lastName=${lastName}, firstName=${firstName} from DB:`, JSON.stringify(owners));
+    const mapped = this.fullMapper.mapArray(owners, Object, OwnerFullDto);
+    this.logger.withContext(OwnersService.name).log(`[Debug] Mapped OwnerFullDto[] for lastName=${lastName}, firstName=${firstName}:`, JSON.stringify(mapped));
+    return mapped;
   }
 }

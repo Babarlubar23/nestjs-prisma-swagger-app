@@ -24,6 +24,13 @@ export class PetsController {
     private readonly logger: CommonLoggerService,
   ) {}
 
+  /**
+   * Helper to serialize pets and remove all fields starting with _
+   */
+  private serializePets<T>(data: T | T[]): any {
+    return instanceToPlain(data, { excludePrefixes: ['_'] });
+  }
+
   @Get()
   @ApiOkResponse({ type: PetBasicDto, isArray: true, description: 'List of all pets' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -31,8 +38,7 @@ export class PetsController {
   async findAll() {
     this.logger.withContext(PetsController.name).log('PetsController: findAll called');
     const pets = await this.petsService.findAll();
-    // Remove all fields starting with _ from the response
-    return instanceToPlain(pets, { excludePrefixes: ['_'] });
+    return this.serializePets(pets);
   }
 
   @Get('by-id/:id')
@@ -46,7 +52,7 @@ export class PetsController {
     try {
       const pet = await this.petsService.findOne(id);
       if (!pet) throw new NotFoundException('Pet not found');
-      return pet;
+      return this.serializePets(pet);
     } catch (err) {
       this.logger.withContext(PetsController.name).error(`Error in PetsController.findOne: ${err}`);
       throw err;
@@ -71,7 +77,7 @@ export class PetsController {
     this.logger.withContext(PetsController.name).log(`PetsController: findByOwnerId called with ownerId=${ownerId}`);
     const pets = await this.petsService.findByOwnerId(ownerId);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
-    return pets;
+    return this.serializePets(pets);
   }
 
   /**
@@ -97,7 +103,7 @@ export class PetsController {
     );
     const pets = await this.petsService.findByOwnerName(lastName, firstName);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
-    return pets;
+    return this.serializePets(pets);
   }
 
   /**
@@ -120,7 +126,7 @@ export class PetsController {
     this.logger.withContext(PetsController.name).log(`PetsController: adminFindByOwnerId called with ownerId=${ownerId}`);
     const pets = await this.petsService.findFullByOwnerId(ownerId);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
-    return pets;
+    return this.serializePets(pets);
   }
 
   /**
@@ -148,6 +154,6 @@ export class PetsController {
     );
     const pets = await this.petsService.findFullByOwnerName(lastName, firstName);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
-    return pets;
+    return this.serializePets(pets);
   }
 }

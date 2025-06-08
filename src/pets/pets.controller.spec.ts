@@ -66,14 +66,13 @@ describe('PetsController', () => {
     const result = await controller.findAll();
     const expected = instanceToPlain(mappedPets, { excludePrefixes: ['_'] });
     expect(result).toEqual(expected);
-    // No longer expect class instance, as controller returns plain objects
     expect(service.findAll).toHaveBeenCalled();
   });
 
   it('should return one pet as PetBasicDto', async () => {
     const result = await controller.findOne(1);
-    expect(result).toEqual(mappedPets[0]);
-    expect(result).toBeInstanceOf(PetBasicDto);
+    const expected = instanceToPlain(mappedPets[0], { excludePrefixes: ['_'] });
+    expect(result).toEqual(expected);
     expect(service.findOne).toHaveBeenCalledWith(1);
   });
 
@@ -90,7 +89,8 @@ describe('PetsController', () => {
       ];
       service.findByOwnerId = jest.fn().mockResolvedValue(pets);
       const result = await controller.findByOwnerId(10);
-      expect(result).toEqual(pets);
+      const expected = instanceToPlain(pets, { excludePrefixes: ['_'] });
+      expect(result).toEqual(expected);
       expect(result.length).toBe(2);
       expect(service.findByOwnerId).toHaveBeenCalledWith(10);
     });
@@ -108,7 +108,8 @@ describe('PetsController', () => {
       ];
       service.findByOwnerName = jest.fn().mockResolvedValue(pets);
       const result = await controller.findByOwnerName('Smith');
-      expect(result).toEqual(pets);
+      const expected = instanceToPlain(pets, { excludePrefixes: ['_'] });
+      expect(result).toEqual(expected);
       expect(result.length).toBe(2);
       expect(service.findByOwnerName).toHaveBeenCalledWith('Smith', undefined);
     });
@@ -116,7 +117,8 @@ describe('PetsController', () => {
       const pets = [Object.assign(new PetBasicDto(), { id: 3, name: 'Bella', ownerId: 12 })];
       service.findByOwnerName = jest.fn().mockResolvedValue(pets);
       const result = await controller.findByOwnerName('Smith', 'John');
-      expect(result).toEqual(pets);
+      const expected = instanceToPlain(pets, { excludePrefixes: ['_'] });
+      expect(result).toEqual(expected);
       expect(result.length).toBe(1);
       expect(service.findByOwnerName).toHaveBeenCalledWith('Smith', 'John');
     });

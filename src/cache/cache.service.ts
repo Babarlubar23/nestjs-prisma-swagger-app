@@ -26,19 +26,20 @@ export class CacheService implements OnModuleInit {
     }
   }
 
-  private makeKey(type: { name: string }, idOrLastName: number | string): string {
+  private makeKey(type: { name: string }, idOrName: number | string): string {
     const domain = type.name.toLowerCase().replace('service', '');
     if (domain === 'owner' || domain === 'owners') {
-      if (typeof idOrLastName === 'number') {
-        return `owners:${idOrLastName}`;
+      if (typeof idOrName === 'number') {
+        return `owners:${idOrName}`;
       } else {
-        return `owners:lastName:${idOrLastName}`;
+        return `owners:name:${idOrName}`;
       }
     } else if (domain === 'pet' || domain === 'pets') {
-      if (typeof idOrLastName === 'number') {
-        return `pets:${idOrLastName}`;
-      } else {
-        throw new Error('Pets cache key must use id (number), not lastName');
+      if (typeof idOrName === 'number') {
+        return `pets:${idOrName}`;
+      } else if (typeof idOrName === 'string') {
+        // Support composite keys for pets by owner's name (e.g. lastName or lastName:firstName)
+        return `pets:ownerName:${idOrName}`;
       }
     }
     throw new Error('Invalid cache domain');

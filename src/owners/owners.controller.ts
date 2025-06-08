@@ -13,6 +13,7 @@ import { OwnerFullDto } from './dto/owner-full.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { CommonLoggerService } from '../common/logging/logger.service';
+import { instanceToPlain } from 'class-transformer';
 
 @ApiTags('owners')
 @ApiBearerAuth()
@@ -23,13 +24,20 @@ export class OwnersController {
     private readonly logger: CommonLoggerService,
   ) {}
 
+  /**
+   * Helper to serialize owners and remove all fields starting with _
+   */
+  private serializeOwners<T>(data: T | T[]): any {
+    return instanceToPlain(data, { excludePrefixes: ['_'] });
+  }
+
   @Get()
   @ApiOkResponse({ type: OwnerBasicDto, isArray: true, description: 'List of all owners' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   findAll() {
     this.logger.withContext(OwnersController.name).log('OwnersController: findAll called');
-    return this.ownersService.findAll();
+    return this.ownersService.findAll().then(this.serializeOwners);
   }
 
   @Get('by-id/:id')
@@ -43,7 +51,7 @@ export class OwnersController {
     try {
       const owner = await this.ownersService.findOne(id);
       if (!owner) throw new NotFoundException('Owner not found');
-      return owner;
+      return this.serializeOwners(owner);
     } catch (err) {
       console.error('Error in OwnersController.findOne', { context: OwnersController.name, err });
       throw err;
@@ -74,7 +82,7 @@ export class OwnersController {
     this.logger.withContext(OwnersController.name).log('OwnersController: findByName called with lastName=' + lastName + ', firstName=' + firstName);
     const owners = await this.ownersService.findByName(lastName, firstName);
     if (!owners || owners.length === 0) throw new NotFoundException('No owners found');
-    return owners;
+    return this.serializeOwners(owners);
   }
 
   /**
@@ -92,7 +100,7 @@ export class OwnersController {
     this.logger.withContext(OwnersController.name).log('OwnersController: adminFindOne called with id ' + id);
     const owner = await this.ownersService.findFullById(id);
     if (!owner) throw new NotFoundException('Owner not found');
-    return owner;
+    return this.serializeOwners(owner);
   }
 
   /**
@@ -114,6 +122,6 @@ export class OwnersController {
     this.logger.withContext(OwnersController.name).log('OwnersController: adminFindByName called with lastName=' + lastName + ', firstName=' + firstName);
     const owners = await this.ownersService.findFullByName(lastName, firstName);
     if (!owners || owners.length === 0) throw new NotFoundException('No owners found');
-    return owners;
+    return this.serializeOwners(owners);
   }
 }

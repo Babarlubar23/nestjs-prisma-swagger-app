@@ -12,6 +12,7 @@ import { OwnerBasicDto } from './dto/owner-basic.dto';
 import { NotFoundException } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { CommonLoggerService } from '../common/logging/logger.service';
+import { instanceToPlain } from 'class-transformer';
 
 describe('OwnersController', () => {
   let controller: OwnersController;
@@ -55,15 +56,15 @@ describe('OwnersController', () => {
 
   it('should return all owners as OwnerBasicDto', async () => {
     const result = await controller.findAll();
-    expect(result).toEqual(mappedOwners);
-    expect(result[0]).toBeInstanceOf(OwnerBasicDto);
+    const expected = instanceToPlain(mappedOwners, { excludePrefixes: ['_'] });
+    expect(result).toEqual(expected);
     expect(service.findAll).toHaveBeenCalled();
   });
 
   it('should return one owner as OwnerBasicDto', async () => {
     const result = await controller.findOne(1);
-    expect(result).toEqual(mappedOwners[0]);
-    expect(result).toBeInstanceOf(OwnerBasicDto);
+    const expected = instanceToPlain(mappedOwners[0], { excludePrefixes: ['_'] });
+    expect(result).toEqual(expected);
     expect(service.findOne).toHaveBeenCalledWith(1);
   });
 
@@ -79,7 +80,8 @@ describe('OwnersController', () => {
       const owners = [Object.assign(new OwnerBasicDto(), { id: 1, lastName: 'Smith' })];
       service.findByName = jest.fn().mockResolvedValue(owners);
       const result = await controller.findByName('Smith');
-      expect(result).toEqual(owners);
+      const expected = instanceToPlain(owners, { excludePrefixes: ['_'] });
+      expect(result).toEqual(expected);
       expect(service.findByName).toHaveBeenCalledWith('Smith', undefined);
     });
 
@@ -89,7 +91,8 @@ describe('OwnersController', () => {
       ];
       service.findByName = jest.fn().mockResolvedValue(owners);
       const result = await controller.findByName('Smith', 'John');
-      expect(result).toEqual(owners);
+      const expected = instanceToPlain(owners, { excludePrefixes: ['_'] });
+      expect(result).toEqual(expected);
       expect(service.findByName).toHaveBeenCalledWith('Smith', 'John');
     });
 
@@ -106,7 +109,8 @@ describe('OwnersController', () => {
       ];
       service.findByName = jest.fn().mockResolvedValue(owners);
       const result = await controller.findByName('Smith');
-      expect(result).toEqual(owners);
+      const expected = instanceToPlain(owners, { excludePrefixes: ['_'] });
+      expect(result).toEqual(expected);
       expect(result.length).toBe(3);
       expect(service.findByName).toHaveBeenCalledWith('Smith', undefined);
     });
@@ -117,7 +121,8 @@ describe('OwnersController', () => {
       ];
       service.findByName = jest.fn().mockResolvedValue(owners);
       const result = await controller.findByName('Smith', 'Jane');
-      expect(result).toEqual(owners);
+      const expected = instanceToPlain(owners, { excludePrefixes: ['_'] });
+      expect(result).toEqual(expected);
       expect(result.length).toBe(1);
       expect(result[0].firstName).toBe('Jane');
       expect(result[0].lastName).toBe('Smith');

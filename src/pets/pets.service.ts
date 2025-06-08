@@ -19,51 +19,62 @@ export class PetsService {
   ) {}
 
   async findAll(): Promise<PetBasicDto[]> {
-    this.logger.withContext(PetsService.name).log('Fetching all pets');
-    const cached = await this.cache.get<PetBasicDto>(this.constructor, 0);
-    if (cached) {
-      const hydrated = plainToInstance(PetBasicDto, cached);
-      // Debug: log hydrated DTOs after plainToInstance
-      this.logger.withContext(PetsService.name).log('[Debug] Hydrated PetBasicDto[] from cache:', JSON.stringify(hydrated));
-      return hydrated;
-    }
-
+    this.logger.withContext(PetsService.name).log('Fetching all pets (no cache)');
     const pets = await this.prisma.pet.findMany({ include: { owner: true } });
     const mapped = this.mapper.mapArray(pets, Object, PetBasicDto);
-    await this.cache.set<PetBasicDto>(this.constructor, 0, mapped);
+    this.logger.withContext(PetsService.name).log('[Debug] PetBasicDto[] from DB:', JSON.stringify(mapped));
     return mapped;
   }
 
   async findOne(id: number): Promise<PetBasicDto | null> {
     this.logger.withContext(PetsService.name).log(`Fetching pet with id ${id}`);
-    const cached = await this.cache.get<PetBasicDto>(this.constructor, id);
-    if (cached && cached.length > 0) return plainToInstance(PetBasicDto, cached)[0];
-
+    const cacheKey = `pet:id:${id}`;
+    const cached = await this.cache.get<PetBasicDto>(this.constructor, cacheKey);
+    if (cached && cached.length > 0) {
+      const hydrated = plainToInstance(PetBasicDto, cached)[0];
+      this.logger.withContext(PetsService.name).log(`[Debug] Hydrated PetBasicDto for id ${id} from cache:`, JSON.stringify(hydrated));
+      return hydrated;
+    }
     const pet = await this.prisma.pet.findUnique({ where: { id }, include: { owner: true } });
     if (!pet) return null;
     const mapped = this.mapper.map(pet, Object, PetBasicDto);
-    await this.cache.set<PetBasicDto>(this.constructor, id, [mapped]);
+    this.logger.withContext(PetsService.name).log(`[Debug] PetBasicDto for id ${id} from DB:`, JSON.stringify(mapped));
+    await this.cache.set<PetBasicDto>(this.constructor, cacheKey, [mapped]);
     return mapped;
   }
 
   async findByOwnerId(ownerId: number): Promise<PetBasicDto[]> {
     this.logger.withContext(PetsService.name).log(`Fetching pets for ownerId=${ownerId}`);
-    const cached = await this.cache.get<PetBasicDto>(this.constructor, ownerId);
-    if (cached) return plainToInstance(PetBasicDto, cached);
-
+    const cacheKey = `owner:id:${ownerId}`;
+    const cached = await this.cache.get<PetBasicDto>(this.constructor, cacheKey);
+    if (cached) {
+      const hydrated = plainToInstance(PetBasicDto, cached);
+      this.logger.withContext(PetsService.name).log(`[Debug] Hydrated PetBasicDto[] for ownerId ${ownerId} from cache:`, JSON.stringify(hydrated));
+      return hydrated;
+    }
     const pets = await this.prisma.pet.findMany({ where: { ownerId }, include: { owner: true } });
-    return this.mapper.mapArray(pets, Object, PetBasicDto);
+    const mapped = this.mapper.mapArray(pets, Object, PetBasicDto);
+    this.logger.withContext(PetsService.name).log(`[Debug] PetBasicDto[] for ownerId ${ownerId} from DB:`, JSON.stringify(mapped));
+    await this.cache.set<PetBasicDto>(this.constructor, cacheKey, mapped);
+    return mapped;
   }
 
   async findByOwnerName(lastName: string, firstName?: string): Promise<PetBasicDto[]> {
     this.logger.withContext(PetsService.name).log(`Fetching pets for owner lastName=${lastName}, firstName=${firstName}`);
-    const cacheKey = firstName ? `${lastName}:${firstName}` : lastName;
+    const cacheKey = `owner:name:${lastName}`;
     const cached = await this.cache.get<PetBasicDto>(this.constructor, cacheKey);
-    if (cached) return plainToInstance(PetBasicDto, cached);
-
+    if (cached) {
+      const hydrated = plainToInstance(PetBasicDto, cached);
+      this.logger.withContext(PetsService.name).log(`[Debug] Hydrated PetBasicDto[] for owner lastName ${lastName} from cache:`, JSON.stringify(hydrated));
+      if (firstName) {
+        const filtered = hydrated.filter(pet => pet._ownerFirstName === firstName);
+        this.logger.withContext(PetsService.name).log(`[Debug] Filtered PetBasicDto[] for owner lastName ${lastName} and firstName ${firstName} from cache:`, JSON.stringify(filtered));
+        return filtered.length > 0 ? filtered : [];
+      }
+      return hydrated;
+    }
+    // Cache miss: query DB for all pets by lastName only
     const ownerWhere: Record<string, unknown> = { lastName };
-    if (firstName) ownerWhere.firstName = firstName;
-    // Find all owners matching the name
     const owners = await this.prisma.owner.findMany({ where: ownerWhere, select: { id: true } });
     if (!owners.length) return [];
     const ownerIds = owners.map((o) => o.id);
@@ -71,7 +82,15 @@ export class PetsService {
       where: { ownerId: { in: ownerIds } },
       include: { owner: true },
     });
-    return this.mapper.mapArray(pets, Object, PetBasicDto);
+    const mapped = this.mapper.mapArray(pets, Object, PetBasicDto);
+    this.logger.withContext(PetsService.name).log(`[Debug] PetBasicDto[] for owner lastName ${lastName} from DB:`, JSON.stringify(mapped));
+    await this.cache.set<PetBasicDto>(this.constructor, cacheKey, mapped);
+    if (firstName) {
+      const filtered = mapped.filter(pet => pet._ownerFirstName === firstName);
+      this.logger.withContext(PetsService.name).log(`[Debug] Filtered PetBasicDto[] for owner lastName ${lastName} and firstName ${firstName} from DB:`, JSON.stringify(filtered));
+      return filtered.length > 0 ? filtered : [];
+    }
+    return mapped;
   }
 
   async findFullByOwnerId(ownerId: number): Promise<PetFullDto[]> {
