@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
 import jwt, { JwtHeader, SigningKeyCallback } from 'jsonwebtoken';
-import jwksRsa from 'jwks-rsa';
+import jwksRsa, { SigningKey } from 'jwks-rsa';
 
 const TENANT_ID = process.env.AZURE_AD_TENANT_ID;
 const CLIENT_ID = process.env.AZURE_AD_CLIENT_ID;
@@ -19,7 +19,7 @@ function getKey(header: JwtHeader, callback: SigningKeyCallback) {
   if (!header.kid) {
     return callback(new Error('No KID in token header'));
   }
-  client.getSigningKey(header.kid, (err: Error | null, key: any) => {
+  client.getSigningKey(header.kid, (err: Error | null, key: SigningKey) => {
     if (err || !key) return callback(err || new Error('No signing key found'));
     const signingKey = key.getPublicKey();
     callback(null, signingKey);
@@ -47,12 +47,13 @@ export class AzureAdGuard implements CanActivate {
           },
           (err: jwt.VerifyErrors | null, decoded: string | jwt.JwtPayload | undefined) => {
             if (err) return reject(err);
-            if (!decoded || typeof decoded === 'string') return reject(new Error('Invalid token payload'));
+            if (!decoded || typeof decoded === 'string')
+              return reject(new Error('Invalid token payload'));
             resolve(decoded);
           },
         );
       });
-      (request as any).user = payload;
+      (request as Request & { user?: jwt.JwtPayload }).user = payload;
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');

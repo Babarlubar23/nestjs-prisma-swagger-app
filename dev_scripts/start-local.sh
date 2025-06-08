@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Load .env.local if it exists, else fallback to .env
-if [ -f .env.local ]; then
-  export $(grep -v '^#' .env.local | xargs)
+# Change to project root directory
+cd "$(dirname "$0")/.."
+
+# Load .env.dev if it exists, else fallback to .env
+if [ -f .env.dev ]; then
+  export $(grep -v '^#' .env.dev | xargs)
 elif [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 fi

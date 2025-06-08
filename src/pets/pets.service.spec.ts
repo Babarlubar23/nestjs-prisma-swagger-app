@@ -9,7 +9,13 @@ describe('PetsService', () => {
   let service: PetsService;
   let prismaMock: { pet: { findMany: jest.Mock; findUnique: jest.Mock } };
   let cache: CacheService;
-  const loggerMock = { log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn(), withContext: () => loggerMock };
+  const loggerMock = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    withContext: () => loggerMock,
+  };
 
   beforeEach(async () => {
     prismaMock = {

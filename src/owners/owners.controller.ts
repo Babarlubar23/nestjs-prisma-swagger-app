@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+  NotFoundException,
+  Query,
+} from '@nestjs/common';
 import { OwnersService } from './owners.service';
 import { AzureAdGuard } from '../auth';
 import {
@@ -27,7 +35,7 @@ export class OwnersController {
   /**
    * Helper to serialize owners and remove all fields starting with _
    */
-  private serializeOwners<T>(data: T | T[]): any {
+  private serializeOwners<T>(data: T | T[]): Record<string, unknown> | Record<string, unknown>[] {
     return instanceToPlain(data, { excludePrefixes: ['_'] });
   }
 
@@ -47,7 +55,9 @@ export class OwnersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    this.logger.withContext(OwnersController.name).log(`OwnersController: findOne called with id ${id}`);
+    this.logger
+      .withContext(OwnersController.name)
+      .log(`OwnersController: findOne called with id ${id}`);
     try {
       const owner = await this.ownersService.findOne(id);
       if (!owner) throw new NotFoundException('Owner not found');
@@ -75,11 +85,15 @@ export class OwnersController {
   @ApiNotFoundResponse({ description: 'No owners found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async findByName(
-    @Param('lastName') lastName: string,
-    @Query('firstName') firstName?: string,
-  ) {
-    this.logger.withContext(OwnersController.name).log('OwnersController: findByName called with lastName=' + lastName + ', firstName=' + firstName);
+  async findByName(@Param('lastName') lastName: string, @Query('firstName') firstName?: string) {
+    this.logger
+      .withContext(OwnersController.name)
+      .log(
+        'OwnersController: findByName called with lastName=' +
+          lastName +
+          ', firstName=' +
+          firstName,
+      );
     const owners = await this.ownersService.findByName(lastName, firstName);
     if (!owners || owners.length === 0) throw new NotFoundException('No owners found');
     return this.serializeOwners(owners);
@@ -97,7 +111,9 @@ export class OwnersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async adminFindOne(@Param('id', ParseIntPipe) id: number) {
-    this.logger.withContext(OwnersController.name).log('OwnersController: adminFindOne called with id ' + id);
+    this.logger
+      .withContext(OwnersController.name)
+      .log('OwnersController: adminFindOne called with id ' + id);
     const owner = await this.ownersService.findFullById(id);
     if (!owner) throw new NotFoundException('Owner not found');
     return this.serializeOwners(owner);
@@ -110,7 +126,11 @@ export class OwnersController {
   @Get('admin/by-name/:lastName')
   @UseGuards(AzureAdGuard, RolesGuard)
   @Roles('PetWarehouseAdmin')
-  @ApiOkResponse({ type: OwnerFullDto, isArray: true, description: 'Full owners matching name (admin)' })
+  @ApiOkResponse({
+    type: OwnerFullDto,
+    isArray: true,
+    description: 'Full owners matching name (admin)',
+  })
   @ApiResponse({ status: 400, description: 'Invalid name' })
   @ApiNotFoundResponse({ description: 'No owners found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -119,7 +139,14 @@ export class OwnersController {
     @Param('lastName') lastName: string,
     @Query('firstName') firstName?: string,
   ) {
-    this.logger.withContext(OwnersController.name).log('OwnersController: adminFindByName called with lastName=' + lastName + ', firstName=' + firstName);
+    this.logger
+      .withContext(OwnersController.name)
+      .log(
+        'OwnersController: adminFindByName called with lastName=' +
+          lastName +
+          ', firstName=' +
+          firstName,
+      );
     const owners = await this.ownersService.findFullByName(lastName, firstName);
     if (!owners || owners.length === 0) throw new NotFoundException('No owners found');
     return this.serializeOwners(owners);

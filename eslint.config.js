@@ -1,19 +1,28 @@
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
-import prettier from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
+const tseslint = require('@typescript-eslint/eslint-plugin');
+const tsParser = require('@typescript-eslint/parser');
+const prettier = require('eslint-config-prettier');
+const prettierPlugin = require('eslint-plugin-prettier');
 
 /** @type {import('eslint').FlatConfig[]} */
-export default [
+module.exports = [
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/', '*.js', '*.d.ts', '*.log', '*.json'],
+    ignores: [
+      'dist/',
+      'node_modules/',
+      'coverage/',
+      '*.js',
+      '*.d.ts',
+      '*.log',
+      '*.json',
+      // Add ignores from .eslintignore if any
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './tsconfig.spec.json'],
         sourceType: 'module',
       },
     },

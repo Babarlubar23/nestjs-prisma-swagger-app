@@ -3,4 +3,5 @@ npm-debug.log
 dist
 tsconfig.tsbuildinfo
 .env.local
+.env.dev
 *.sh

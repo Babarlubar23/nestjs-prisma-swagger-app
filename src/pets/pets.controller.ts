@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+  NotFoundException,
+  Query,
+} from '@nestjs/common';
 import { PetsService } from './pets.service';
 import { AzureAdGuard } from '../auth';
 import {
@@ -27,7 +35,7 @@ export class PetsController {
   /**
    * Helper to serialize pets and remove all fields starting with _
    */
-  private serializePets<T>(data: T | T[]): any {
+  private serializePets<T>(data: T | T[]): Record<string, unknown> | Record<string, unknown>[] {
     return instanceToPlain(data, { excludePrefixes: ['_'] });
   }
 
@@ -48,7 +56,9 @@ export class PetsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    this.logger.withContext(PetsController.name).log(`PetsController: findOne called with id ${id}`);
+    this.logger
+      .withContext(PetsController.name)
+      .log(`PetsController: findOne called with id ${id}`);
     try {
       const pet = await this.petsService.findOne(id);
       if (!pet) throw new NotFoundException('Pet not found');
@@ -74,7 +84,9 @@ export class PetsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async findByOwnerId(@Param('ownerId', ParseIntPipe) ownerId: number) {
-    this.logger.withContext(PetsController.name).log(`PetsController: findByOwnerId called with ownerId=${ownerId}`);
+    this.logger
+      .withContext(PetsController.name)
+      .log(`PetsController: findByOwnerId called with ownerId=${ownerId}`);
     const pets = await this.petsService.findByOwnerId(ownerId);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
     return this.serializePets(pets);
@@ -98,9 +110,11 @@ export class PetsController {
     @Param('lastName') lastName: string,
     @Query('firstName') firstName?: string,
   ) {
-    this.logger.withContext(PetsController.name).log(
-      `PetsController: findByOwnerName called with lastName=${lastName}, firstName=${firstName}`,
-    );
+    this.logger
+      .withContext(PetsController.name)
+      .log(
+        `PetsController: findByOwnerName called with lastName=${lastName}, firstName=${firstName}`,
+      );
     const pets = await this.petsService.findByOwnerName(lastName, firstName);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
     return this.serializePets(pets);
@@ -123,7 +137,9 @@ export class PetsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async adminFindByOwnerId(@Param('ownerId', ParseIntPipe) ownerId: number) {
-    this.logger.withContext(PetsController.name).log(`PetsController: adminFindByOwnerId called with ownerId=${ownerId}`);
+    this.logger
+      .withContext(PetsController.name)
+      .log(`PetsController: adminFindByOwnerId called with ownerId=${ownerId}`);
     const pets = await this.petsService.findFullByOwnerId(ownerId);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
     return this.serializePets(pets);
@@ -149,9 +165,11 @@ export class PetsController {
     @Param('lastName') lastName: string,
     @Query('firstName') firstName?: string,
   ) {
-    this.logger.withContext(PetsController.name).log(
-      `PetsController: adminFindByOwnerName called with lastName=${lastName}, firstName=${firstName}`,
-    );
+    this.logger
+      .withContext(PetsController.name)
+      .log(
+        `PetsController: adminFindByOwnerName called with lastName=${lastName}, firstName=${firstName}`,
+      );
     const pets = await this.petsService.findFullByOwnerName(lastName, firstName);
     if (!pets || pets.length === 0) throw new NotFoundException('No pets found for this owner');
     return this.serializePets(pets);

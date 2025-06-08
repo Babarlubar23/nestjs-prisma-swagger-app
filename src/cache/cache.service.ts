@@ -13,16 +13,20 @@ export class CacheService implements OnModuleInit {
       this.client = createClient({ url: process.env.REDIS_URL });
       await this.client.connect();
       // Use CommonLoggerService for Redis connection success and URL
-      this.logger.withContext(CacheService.name).log('[CacheService] Connected to Redis at ' + process.env.REDIS_URL);
+      this.logger
+        .withContext(CacheService.name)
+        .log('[CacheService] Connected to Redis at ' + process.env.REDIS_URL);
     } catch (err) {
       // Use CommonLoggerService for Redis connection errors
-      this.logger.withContext(CacheService.name).error(`[CacheService] Redis connection failed: ${err} URL: ${process.env.REDIS_URL}`);
+      this.logger
+        .withContext(CacheService.name)
+        .error(`[CacheService] Redis connection failed: ${err} URL: ${process.env.REDIS_URL}`);
       this.client = {
         get: async () => null,
-        set: async () => undefined,
+        set: async () => null,
         connect: async () => undefined,
         // ...other methods as needed
-      } as any;
+      } as unknown as RedisClientType;
     }
   }
 
@@ -49,16 +53,22 @@ export class CacheService implements OnModuleInit {
     const key = this.makeKey(type, idOrLastName);
     const value = await this.client.get(key);
     // Use CommonLoggerService for cache get debug
-    this.logger.withContext(CacheService.name).log(`[CacheService] GET key= ${key} raw value: ${value}`);
+    this.logger
+      .withContext(CacheService.name)
+      .log(`[CacheService] GET key= ${key} raw value: ${value}`);
     if (!value) return null;
     let parsed: T[];
     try {
       parsed = JSON.parse(value) as T[];
     } catch (err) {
-      this.logger.withContext(CacheService.name).error(`[CacheService] Failed to parse value for key= ${key}`, err);
+      this.logger
+        .withContext(CacheService.name)
+        .error(`[CacheService] Failed to parse value for key= ${key}`, err);
       return null;
     }
-    this.logger.withContext(CacheService.name).log(`[CacheService] Parsed value for key= ${key} ${JSON.stringify(parsed)}`);
+    this.logger
+      .withContext(CacheService.name)
+      .log(`[CacheService] Parsed value for key= ${key} ${JSON.stringify(parsed)}`);
     return parsed;
   }
 

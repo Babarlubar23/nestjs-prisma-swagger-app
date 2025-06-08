@@ -10,7 +10,13 @@ describe('OwnersService', () => {
   let prisma: { owner: { findMany: jest.Mock; findUnique: jest.Mock } };
   let cache: CacheService;
 
-  const loggerMock = { log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn(), withContext: () => loggerMock };
+  const loggerMock = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    withContext: () => loggerMock,
+  };
 
   beforeEach(async () => {
     prisma = {
@@ -157,8 +163,8 @@ describe('OwnersService', () => {
     prisma.owner.findMany.mockResolvedValue(mockOwners);
     const result = await service.findByName('Goldenpaw');
     expect(result).toHaveLength(2);
-    expect(result.map(o => o.firstName)).toEqual(expect.arrayContaining(['Alice', 'Hannah']));
-    expect(result.every(o => o.lastName === 'Goldenpaw')).toBe(true);
+    expect(result.map((o) => o.firstName)).toEqual(expect.arrayContaining(['Alice', 'Hannah']));
+    expect(result.every((o) => o.lastName === 'Goldenpaw')).toBe(true);
     expect(result[0]).toBeInstanceOf(OwnerBasicDto);
     expect(result[1]).toBeInstanceOf(OwnerBasicDto);
   });

@@ -11,9 +11,14 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
 import { LoggerModule } from './common/logging/logger.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.dev', '.env'],
+    }),
     PrismaModule,
     CacheModule,
     AuthModule,
@@ -23,6 +28,6 @@ import { LoggerModule } from './common/logging/logger.module';
     AutomapperModule.forRoot({ strategyInitializer: classes() }),
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_FILTER, useClass: HttpExceptionFilter }],
+  providers: [AppService, { provide: APP_FILTER, useClass: HttpExceptionFilter }, ConfigService],
 })
 export class AppModule {}

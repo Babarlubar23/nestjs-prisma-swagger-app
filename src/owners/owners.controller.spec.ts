@@ -10,7 +10,6 @@ import { OwnersController } from './owners.controller';
 import { OwnersService } from './owners.service';
 import { OwnerBasicDto } from './dto/owner-basic.dto';
 import { NotFoundException } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
 import { CommonLoggerService } from '../common/logging/logger.service';
 import { instanceToPlain } from 'class-transformer';
 
@@ -24,13 +23,18 @@ describe('OwnersController', () => {
   ];
 
   const mappedOwners = mockOwners.map((o) => Object.assign(new OwnerBasicDto(), o));
-  const loggerMock = { log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn(), withContext: () => loggerMock };
+  const loggerMock = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    withContext: () => loggerMock,
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OwnersController],
       providers: [
-        { provide: Logger, useValue: loggerMock },
         { provide: CommonLoggerService, useValue: loggerMock },
         {
           provide: OwnersService,

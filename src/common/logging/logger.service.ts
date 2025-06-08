@@ -22,24 +22,29 @@ export class CommonLoggerService implements NestLoggerService {
     this.context = context;
   }
 
-  log(message: any, context?: string) {
-    this.logger.info({ context: context || this.context }, message);
+  log(message: string | object, context?: string) {
+    const msg = typeof message === 'object' ? JSON.stringify(message) : message;
+    this.logger.info({ context: context || this.context }, msg);
   }
 
-  error(message: any, trace?: string, context?: string) {
-    this.logger.error({ context: context || this.context, trace }, message);
+  error(message: string | object, trace?: string, context?: string) {
+    const msg = typeof message === 'object' ? JSON.stringify(message) : message;
+    this.logger.error({ context: context || this.context, trace }, msg);
   }
 
-  warn(message: any, context?: string) {
-    this.logger.warn({ context: context || this.context }, message);
+  warn(message: string | object, context?: string) {
+    const msg = typeof message === 'object' ? JSON.stringify(message) : message;
+    this.logger.warn({ context: context || this.context }, msg);
   }
 
-  debug?(message: any, context?: string) {
-    this.logger.debug({ context: context || this.context }, message);
+  debug?(message: string | object, context?: string) {
+    const msg = typeof message === 'object' ? JSON.stringify(message) : message;
+    this.logger.debug({ context: context || this.context }, msg);
   }
 
-  verbose?(message: any, context?: string) {
-    this.logger.info({ context: context || this.context }, message);
+  verbose?(message: string | object, context?: string) {
+    const msg = typeof message === 'object' ? JSON.stringify(message) : message;
+    this.logger.info({ context: context || this.context }, msg);
   }
 
   withContext(context: string): CommonLoggerService {

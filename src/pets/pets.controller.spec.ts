@@ -9,7 +9,6 @@ import { PetsController } from './pets.controller';
 import { PetsService } from './pets.service';
 import { PetBasicDto } from './dto/pet-basic.dto';
 import { NotFoundException } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
 import { CommonLoggerService } from '../common/logging/logger.service';
 import { instanceToPlain } from 'class-transformer';
 
@@ -23,13 +22,18 @@ describe('PetsController', () => {
   ];
 
   const mappedPets = mockPets.map((p) => Object.assign(new PetBasicDto(), p));
-  const loggerMock = { log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn(), withContext: () => loggerMock };
+  const loggerMock = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    withContext: () => loggerMock,
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PetsController],
       providers: [
-        { provide: Logger, useValue: loggerMock },
         { provide: CommonLoggerService, useValue: loggerMock },
         {
           provide: PetsService,

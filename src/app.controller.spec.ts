@@ -8,7 +8,13 @@ describe('AppController', () => {
   let service: AppService;
 
   beforeEach(async () => {
-    const loggerMock = { log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn(), withContext: () => loggerMock };
+    const loggerMock = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      withContext: () => loggerMock,
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
