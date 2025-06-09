@@ -18,18 +18,18 @@
     "prisma": "prisma",
     "generate": "prisma generate",
     "seed": "ts-node src/database/prisma.seed.ts",
-    "seed:local": "bash ./dev_scripts/prisma-local.sh npx prisma db seed",    
+    "seed:local": "cross-env-shell ./dev_scripts/prisma-local.sh npx prisma db seed",
     "migrate:dev": "prisma migrate dev",
-    "migrate:dev:local": "bash ./dev_scripts/prisma-local.sh npx prisma migrate:dev",
+    "migrate:dev:local": "cross-env-shell ./dev_scripts/prisma-local.sh npx prisma migrate:dev",
     "migrate:deploy": "prisma migrate deploy",
-    "migrate:deploy:local": "bash ./dev_scripts/prisma-local.sh npm run migrate:deploy",
+    "migrate:deploy:local": "cross-env-shell ./dev_scripts/prisma-local.sh npm run migrate:deploy",
     "migrate:status": "prisma migrate status",
-    "migrate:status:local": "bash ./dev_scripts/prisma-local.sh npx prisma migrate status",
+    "migrate:status:local": "cross-env-shell ./dev_scripts/prisma-local.sh npx prisma migrate status",
     "migrate:reset": "prisma migrate reset && npm run seed",
-    "migrate:reset:local": "bash ./dev_scripts/prisma-local.sh npm run migrate:reset",
+    "migrate:reset:local": "cross-env-shell ./dev_scripts/prisma-local.sh npm run migrate:reset",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,ts,json,md}\"",
-    "migrate:local": "bash ./dev_scripts/prisma-local.sh npx prisma migrate deploy",
-    "studio:local": "???"
+    "migrate:local": "cross-env-shell ./dev_scripts/prisma-local.sh npx prisma migrate deploy",
+    "studio:local": "cross-env-shell ./dev_scripts/prisma-local.sh npx prisma studio"
   },
   "dependencies": {
     "@automapper/classes": "^8.8.1",
@@ -70,6 +70,8 @@
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
+    "cross-env": "^7.0.3",
+    "cross-env-shell": "^7.0.3",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
@@ -79,7 +81,8 @@
     "supertest": "^7.1.1",
     "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "shx": "^0.3.4"
   },
   "license": "MIT",
   "private": true
