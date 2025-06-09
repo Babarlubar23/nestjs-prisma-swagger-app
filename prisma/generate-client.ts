@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { CommonLoggerService } from '../common/logging/logger.service';
+import { CommonLoggerService } from '../src/common/logging/logger.service';
 
 /**
  * This script runs `prisma generate` to create the Prisma Client based on your schema.prisma file.

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nest start",
     "build": "nest build",
-    "build:all": "tsc --project tsconfig.build.json",
+    "build:all": "nest build --config tsconfig.build.json",
     "start:dev": "nest start --watch",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
@@ -16,7 +16,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:file": "jest --runInBand --detectOpenHandles --forceExit $FILE",
     "prisma": "prisma",
-    "generate": "prisma generate",
+    "prisma:generate": "prisma generate",
     "seed": "ts-node src/database/prisma.seed.ts",
     "seed:local": "cross-env-shell ./dev_scripts/prisma-local.sh npx prisma db seed",
     "migrate:dev": "prisma migrate dev",
@@ -78,11 +78,12 @@
     "eslint-plugin-prettier": "^5.4.1",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
+    "shx": "^0.3.4",
     "supertest": "^7.1.1",
     "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
-    "shx": "^0.3.4"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
   },
   "license": "MIT",
   "private": true
