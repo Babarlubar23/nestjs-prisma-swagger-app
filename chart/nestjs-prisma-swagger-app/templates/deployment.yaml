@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nestjs-prisma-swagger-app.fullname" . }}
+  labels:
+    {{- include "nestjs-prisma-swagger-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "nestjs-prisma-swagger-app.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "nestjs-prisma-swagger-app.name" . }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.env.NODE_ENV | quote }}
+            - name: DATABASE_URL
+              value: {{ .Values.env.DATABASE_URL | quote }}
+            - name: APP_PORT
+              value: {{ .Values.env.APP_PORT | quote }}
+            - name: APP_HOST_PORT
+              value: {{ .Values.env.APP_HOST_PORT | quote }}
+            - name: TEST_HOST_PORT
+              value: {{ .Values.env.TEST_HOST_PORT | quote }}
+            - name: POSTGRES_IMAGE
+              value: {{ .Values.env.POSTGRES_IMAGE | quote }}
+            - name: DB_HOST_PORT
+              value: {{ .Values.env.DB_HOST_PORT | quote }}
+            - name: DB_PORT
+              value: {{ .Values.env.DB_PORT | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.env.POSTGRES_USER | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.env.POSTGRES_PASSWORD | quote }}
+            - name: POSTGRES_DB
+              value: {{ .Values.env.POSTGRES_DB | quote }}
+            - name: REDIS_IMAGE
+              value: {{ .Values.env.REDIS_IMAGE | quote }}
+            - name: REDIS_HOST_PORT
+              value: {{ .Values.env.REDIS_HOST_PORT | quote }}
+            - name: REDIS_APP_PORT
+              value: {{ .Values.env.REDIS_APP_PORT | quote }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.env.REDIS_PASSWORD | quote }}
+          ports:
+            - containerPort: 3000
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+# To replicate Compose volumes, add volumeMounts and volumes here if needed

@@ -1,0 +1,33 @@
+apiVersion: skaffold/v4beta8
+kind: Config
+metadata:
+  name: nestjs-prisma-swagger-app
+build:
+  artifacts:
+    - image: nestjs-prisma-swagger-app
+      buildpacks:
+        builder: gcr.io/buildpacks/builder:v1
+        env:
+          - NODE_ENV=development
+      context: .
+  local:
+    push: false
+manifests:
+  helm:
+    releases:
+      - name: nestjs-prisma-swagger-app
+        chartPath: chart/nestjs-prisma-swagger-app
+        valuesFiles:
+          - chart/nestjs-prisma-swagger-app/values.yaml
+        setValueTemplates:
+          image.repository: nestjs-prisma-swagger-app
+          image.tag: '{{.IMAGE_TAG_nestjs_prisma_swagger_app}}'
+        hooks:
+          before:
+            - command: ["echo", "Custom pre-deploy hook: you can add your own scripts here!"]
+        version: v3
+portForward:
+  - resourceType: service
+    resourceName: nestjs-prisma-swagger-app
+    port: 3000
+    localPort: 3000

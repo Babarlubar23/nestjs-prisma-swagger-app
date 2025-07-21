@@ -1,0 +1,16 @@
+# You can add custom hooks here for Helm
+# Example: pre-install hook
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "nestjs-prisma-swagger-app.fullname" . }}-preinstall
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  template:
+    spec:
+      containers:
+        - name: preinstall
+          image: busybox
+          command: ["sh", "-c", "echo Pre-install hook running!"]
+      restartPolicy: Never

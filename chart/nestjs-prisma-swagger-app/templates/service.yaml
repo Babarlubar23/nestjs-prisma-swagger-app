@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nestjs-prisma-swagger-app.fullname" . }}
+  labels:
+    {{- include "nestjs-prisma-swagger-app.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "nestjs-prisma-swagger-app.name" . }}

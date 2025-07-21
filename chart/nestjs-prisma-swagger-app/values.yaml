@@ -1,0 +1,30 @@
+replicaCount: 1
+image:
+  repository: nestjs-prisma-swagger-app
+  tag: "latest"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 3000
+  # You can add more ports if needed, e.g. for test
+
+env:
+  NODE_ENV: production
+  DATABASE_URL: ""
+  APP_PORT: 3000
+  APP_HOST_PORT: 3000
+  TEST_HOST_PORT: 3001
+  POSTGRES_IMAGE: "docker.io/library/postgres:latest"
+  DB_HOST_PORT: 5432
+  DB_PORT: 5432
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+  POSTGRES_DB: "postgres"
+  REDIS_IMAGE: "docker.io/library/redis:7"
+  REDIS_HOST_PORT: 6379
+  REDIS_APP_PORT: 6379
+  REDIS_PASSWORD: "yourStrongPassword"
+
+# To replicate Compose volumes, add PVCs in templates if needed
+# To replicate db/redis, use subcharts or deploy separately
+resources: {}

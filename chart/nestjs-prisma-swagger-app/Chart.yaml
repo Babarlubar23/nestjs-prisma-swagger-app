@@ -1,0 +1,8 @@
+apiVersion: v2
+name: nestjs-prisma-swagger-app
+version: 0.1.0
+description: A Helm chart for deploying the NestJS Prisma Swagger App
+appVersion: "1.0.0"
+
+# You can add dependencies here
+# dependencies: []
