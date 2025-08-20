@@ -170,6 +170,10 @@ const config = {
         "fromEnvVar": null,
         "value": "debian-openssl-3.0.x",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "windows"
       }
     ],
     "previewFeatures": [
@@ -198,8 +202,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "datasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\ngenerator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"driverAdapters\"]\n  output          = \"../generated/client\"\n}\n\nmodel Owner {\n  id        Int     @id @default(autoincrement())\n  firstName String\n  lastName  String\n  email     String  @unique\n  phone     String?\n  address   String?\n  pets      Pet[]\n}\n\nmodel Pet {\n  id              Int                  @id @default(autoincrement())\n  name            String\n  species         String\n  breed           String?\n  birthDate       DateTime?\n  vaccinated      Boolean              @default(false)\n  vaccinationDate DateTime?\n  boosters        Booster[]\n  brendanCane     BrendanCaneHistory[]\n  ownerId         Int\n  owner           Owner                @relation(fields: [ownerId], references: [id])\n}\n\nmodel Booster {\n  id    Int      @id @default(autoincrement())\n  name  String\n  date  DateTime\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n\nmodel BrendanCaneHistory {\n  id    Int      @id @default(autoincrement())\n  date  DateTime\n  notes String?\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n",
-  "inlineSchemaHash": "59a01ad64d323a2ec028eba035259c76d5aaf96bfac43c2d59fc8dc2b4caa0ad",
+  "inlineSchema": "datasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\ngenerator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"driverAdapters\"]\n  binaryTargets   = [\"native\", \"windows\"]\n  output          = \"../generated/client\"\n}\n\nmodel Owner {\n  id        Int     @id @default(autoincrement())\n  firstName String\n  lastName  String\n  email     String  @unique\n  phone     String?\n  address   String?\n  pets      Pet[]\n}\n\nmodel Pet {\n  id              Int                  @id @default(autoincrement())\n  name            String\n  species         String\n  breed           String?\n  birthDate       DateTime?\n  vaccinated      Boolean              @default(false)\n  vaccinationDate DateTime?\n  boosters        Booster[]\n  brendanCane     BrendanCaneHistory[]\n  ownerId         Int\n  owner           Owner                @relation(fields: [ownerId], references: [id])\n}\n\nmodel Booster {\n  id    Int      @id @default(autoincrement())\n  name  String\n  date  DateTime\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n\nmodel BrendanCaneHistory {\n  id    Int      @id @default(autoincrement())\n  date  DateTime\n  notes String?\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n",
+  "inlineSchemaHash": "34c2604fea30193cc4ec57d2b211abaa7fb67f088d4f73c33b2abfa719802034",
   "copyEngine": true
 }
 config.dirname = '/'
