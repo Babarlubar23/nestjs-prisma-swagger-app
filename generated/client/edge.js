@@ -174,6 +174,10 @@ const config = {
       {
         "fromEnvVar": null,
         "value": "windows"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "rhel-openssl-3.0.x"
       }
     ],
     "previewFeatures": [
@@ -183,7 +187,7 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
+    "rootEnvPath": "../../.env",
     "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
@@ -202,8 +206,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "datasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\ngenerator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"driverAdapters\"]\n  binaryTargets   = [\"native\", \"windows\"]\n  output          = \"../generated/client\"\n}\n\nmodel Owner {\n  id        Int     @id @default(autoincrement())\n  firstName String\n  lastName  String\n  email     String  @unique\n  phone     String?\n  address   String?\n  pets      Pet[]\n}\n\nmodel Pet {\n  id              Int                  @id @default(autoincrement())\n  name            String\n  species         String\n  breed           String?\n  birthDate       DateTime?\n  vaccinated      Boolean              @default(false)\n  vaccinationDate DateTime?\n  boosters        Booster[]\n  brendanCane     BrendanCaneHistory[]\n  ownerId         Int\n  owner           Owner                @relation(fields: [ownerId], references: [id])\n}\n\nmodel Booster {\n  id    Int      @id @default(autoincrement())\n  name  String\n  date  DateTime\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n\nmodel BrendanCaneHistory {\n  id    Int      @id @default(autoincrement())\n  date  DateTime\n  notes String?\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n",
-  "inlineSchemaHash": "34c2604fea30193cc4ec57d2b211abaa7fb67f088d4f73c33b2abfa719802034",
+  "inlineSchema": "datasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\ngenerator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"driverAdapters\"]\n  binaryTargets   = [\"native\", \"windows\", \"rhel-openssl-3.0.x\"]\n  output          = \"../generated/client\"\n}\n\nmodel Owner {\n  id        Int     @id @default(autoincrement())\n  firstName String\n  lastName  String\n  email     String  @unique\n  phone     String?\n  address   String?\n  pets      Pet[]\n}\n\nmodel Pet {\n  id              Int                  @id @default(autoincrement())\n  name            String\n  species         String\n  breed           String?\n  birthDate       DateTime?\n  vaccinated      Boolean              @default(false)\n  vaccinationDate DateTime?\n  boosters        Booster[]\n  brendanCane     BrendanCaneHistory[]\n  ownerId         Int\n  owner           Owner                @relation(fields: [ownerId], references: [id])\n}\n\nmodel Booster {\n  id    Int      @id @default(autoincrement())\n  name  String\n  date  DateTime\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n\nmodel BrendanCaneHistory {\n  id    Int      @id @default(autoincrement())\n  date  DateTime\n  notes String?\n  petId Int\n  pet   Pet      @relation(fields: [petId], references: [id])\n}\n",
+  "inlineSchemaHash": "d58f25440c287cb4332e16256eb2068c8be9275be01eefb8edd67feb5793c3b6",
   "copyEngine": true
 }
 config.dirname = '/'
