@@ -1,68 +1,31 @@
-import { PrismaClient } from '../../generated/client'
-const prisma = new PrismaClient();
 
-async function main() {
-  // Owner 1: Alice (2 pets)
-  await prisma.owner.create({
-    data: {
-      firstName: 'Alice',
-      lastName: 'Goldenpaw',
-      email: 'alice@example.com',
-      phone: '123-456-7890',
-      address: '123 Main St',
-      pets: {
-        create: [
-          {
-            name: 'Fluffy',
-            species: 'Cat',
-            breed: 'Siamese',
-            birthDate: new Date('2020-01-01'),
-            vaccinated: true,
-            vaccinationDate: new Date('2021-01-01'),
-            boosters: {
-              create: [
-                { name: 'Rabies', date: new Date('2021-06-01') },
-                { name: 'Feline Distemper', date: new Date('2021-07-01') },
-              ],
-            },
-            brendanCane: {
-              create: [{ date: new Date('2022-01-01'), notes: 'Routine check' }],
-            },
-          },
-          {
-            name: 'Rex',
-            species: 'Dog',
-            breed: 'Labrador',
-            birthDate: new Date('2019-05-20'),
-            vaccinated: false,
-            boosters: {
-              create: [{ name: 'Parvo', date: new Date('2020-08-01') }],
-            },
-            brendanCane: {
-              create: [{ date: new Date('2023-03-15'), notes: 'Limping, checked leg' }],
-            },
-          },
-          {
-            name: 'Shadow',
-            species: 'Dog',
-            breed: 'Border Collie',
-            birthDate: new Date('2021-09-10'),
-            vaccinated: true,
-            vaccinationDate: new Date('2022-09-10'),
-            boosters: {
-              create: [
-                { name: 'Rabies', date: new Date('2022-10-01') },
-                { name: 'Canine Distemper', date: new Date('2022-11-01') },
-              ],
-            },
-            brendanCane: {
-              create: [{ date: new Date('2023-05-01'), notes: 'Annual checkup' }],
-            },
-          },
-        ],
+import { PrismaClient } from '../../generated/client';
+import { CloudAuthService } from '../cloud-auth/cloud-auth.service';
+
+async function getPrismaWithAAD() {
+  // Example values, replace with your actual config or env variables
+  const serverName = process.env.POSTGRES_SERVER || 'myserver';
+  const dbName = process.env.POSTGRES_DB || 'mydatabase';
+  const aadUsername = process.env.POSTGRES_AAD_USER || 'user@yourtenant.onmicrosoft.com@myserver';
+  const url = `${serverName}.postgres.database.azure.com`;
+
+  const cloudAuthService = new CloudAuthService();
+  const info = await cloudAuthService.getConnectionInfo(url, 'postgres');
+
+  const connectionString = `postgresql://${aadUsername}:${info.accessToken}@${serverName}.postgres.database.azure.com:5432/${dbName}?sslmode=require`;
+
+  return new PrismaClient({
+    datasources: {
+      db: {
+        url: connectionString,
       },
     },
   });
+}
+
+async function main() {
+  const prisma = await getPrismaWithAAD();
+  // ...existing seeding logic...
 
   // Owner 2: Bob (1 pet)
   await prisma.owner.create({

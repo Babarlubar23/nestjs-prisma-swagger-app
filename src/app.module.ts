@@ -12,6 +12,7 @@ import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
 import { LoggerModule } from './common/logging/logger.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CloudAuthModule } from './cloud-auth/cloud-auth.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     PetsModule,
     LoggerModule,
     AutomapperModule.forRoot({ strategyInitializer: classes() }),
+    CloudAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_FILTER, useClass: HttpExceptionFilter }, ConfigService],
