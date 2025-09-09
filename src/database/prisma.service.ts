@@ -4,7 +4,7 @@ import { CloudAuthService } from '../cloud-auth/cloud-auth.service';
 
 @Injectable()
 export class PrismaService implements OnModuleInit {
-  public prisma: PrismaClient;
+  public prismaClient: PrismaClient;
 
   constructor(private readonly cloudAuthService: CloudAuthService) {}
 
@@ -21,7 +21,7 @@ export class PrismaService implements OnModuleInit {
     // Construct connection string with access token as password
     const connectionString = `postgresql://${aadUsername}:${info.accessToken}@${serverName}.postgres.database.azure.com:5432/${dbName}?sslmode=require`;
 
-    this.prisma = new PrismaClient({
+    this.prismaClient = new PrismaClient({
       datasources: {
         db: {
           url: connectionString,
@@ -29,11 +29,11 @@ export class PrismaService implements OnModuleInit {
       },
     });
 
-    await this.prisma.$connect();
+    await this.prismaClient.$connect();
   }
 
   async enableShutdownHooks(app: INestApplication) {
-    (this.prisma as unknown as { $on(event: string, cb: () => Promise<void>): void }).$on(
+    (this.prismaClient as unknown as { $on(event: string, cb: () => Promise<void>): void }).$on(
       'beforeExit',
       async () => {
         await app.close();

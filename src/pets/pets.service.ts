@@ -20,7 +20,7 @@ export class PetsService {
 
   async findAll(): Promise<PetBasicDto[]> {
     this.logger.withContext(PetsService.name).log('Fetching all pets (no cache)');
-    const pets = await this.prisma.pet.findMany({ include: { owner: true } });
+    const pets = await this.prisma.prismaClient.pet.findMany({ include: { owner: true } });
     const mapped = this.mapper.mapArray(pets, Object, PetBasicDto);
     this.logger
       .withContext(PetsService.name)
@@ -39,7 +39,7 @@ export class PetsService {
         .log(`[Debug] Hydrated PetBasicDto for id ${id} from cache:`, JSON.stringify(hydrated));
       return hydrated;
     }
-    const pet = await this.prisma.pet.findUnique({ where: { id }, include: { owner: true } });
+    const pet = await this.prisma.prismaClient.pet.findUnique({ where: { id }, include: { owner: true } });
     if (!pet) return null;
     const mapped = this.mapper.map(pet, Object, PetBasicDto);
     this.logger
@@ -63,7 +63,7 @@ export class PetsService {
         );
       return hydrated;
     }
-    const pets = await this.prisma.pet.findMany({ where: { ownerId }, include: { owner: true } });
+    const pets = await this.prisma.prismaClient.pet.findMany({ where: { ownerId }, include: { owner: true } });
     const mapped = this.mapper.mapArray(pets, Object, PetBasicDto);
     this.logger
       .withContext(PetsService.name)
@@ -100,10 +100,10 @@ export class PetsService {
     }
     // Cache miss: query DB for all pets by lastName only
     const ownerWhere: Record<string, unknown> = { lastName };
-    const owners = await this.prisma.owner.findMany({ where: ownerWhere, select: { id: true } });
+    const owners = await this.prisma.prismaClient.owner.findMany({ where: ownerWhere, select: { id: true } });
     if (!owners.length) return [];
     const ownerIds = owners.map((o) => o.id);
-    const pets = await this.prisma.pet.findMany({
+    const pets = await this.prisma.prismaClient.pet.findMany({
       where: { ownerId: { in: ownerIds } },
       include: { owner: true },
     });
@@ -127,7 +127,7 @@ export class PetsService {
 
   async findFullByOwnerId(ownerId: number): Promise<PetFullDto[]> {
     this.logger.withContext(PetsService.name).log(`Fetching full pets for ownerId=${ownerId}`);
-    const pets = await this.prisma.pet.findMany({
+    const pets = await this.prisma.prismaClient.pet.findMany({
       where: { ownerId },
       include: {
         boosters: true,
@@ -144,10 +144,10 @@ export class PetsService {
       .log(`Fetching full pets for owner lastName=${lastName}, firstName=${firstName}`);
     const ownerWhere: Record<string, unknown> = { lastName };
     if (firstName) ownerWhere.firstName = firstName;
-    const owners = await this.prisma.owner.findMany({ where: ownerWhere, select: { id: true } });
+    const owners = await this.prisma.prismaClient.owner.findMany({ where: ownerWhere, select: { id: true } });
     if (!owners.length) return [];
     const ownerIds = owners.map((o) => o.id);
-    const pets = await this.prisma.pet.findMany({
+    const pets = await this.prisma.prismaClient.pet.findMany({
       where: { ownerId: { in: ownerIds } },
       include: {
         boosters: true,

@@ -1,16 +1,31 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 import { CommonLoggerService } from '../common/logging/logger.service';
+import { CloudAuthService } from 'src/cloud-auth/cloud-auth.service';
 
 @Injectable()
 export class CacheService implements OnModuleInit {
   private client!: RedisClientType;
 
-  constructor(private readonly logger: CommonLoggerService) {}
+  constructor(private readonly cloudAuthService: CloudAuthService, private readonly logger: CommonLoggerService) {}
 
   async onModuleInit() {
     try {
-      this.client = createClient({ url: process.env.REDIS_URL });
+    // Get access token from CloudAuthService
+    const url: string = process.env.REDIS_URL || 'myredis.redis.cache.windows.net:6380';
+    const info = await this.cloudAuthService.getConnectionInfo(url, 'redis');
+
+      this.client = createClient({
+        url,
+        password: info.accessToken,
+        socket: {
+          tls: true,
+          host: 'redisHost',
+          port: 6380,
+          rejectUnauthorized: false
+        }
+      });      
+
       await this.client.connect();
       // Use CommonLoggerService for Redis connection success and URL
       this.logger

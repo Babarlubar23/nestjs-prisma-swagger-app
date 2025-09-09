@@ -23,10 +23,7 @@ async function getPrismaWithAAD() {
   });
 }
 
-async function main() {
-  const prisma = await getPrismaWithAAD();
-  // ...existing seeding logic...
-
+async function seedDatabase(prisma: PrismaClient) {
   // Owner 2: Bob (1 pet)
   await prisma.owner.create({
     data: {
@@ -230,9 +227,17 @@ async function main() {
   });
 }
 
-main()
-  .catch((e) => {
+async function main() {
+  const prisma = await getPrismaWithAAD();
+  
+  try {
+    await seedDatabase(prisma);
+  } catch (e) {
     console.error(e);
     process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+main();

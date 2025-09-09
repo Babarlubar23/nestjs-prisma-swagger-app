@@ -20,7 +20,7 @@ export class OwnersService {
 
   async findAll(): Promise<OwnerBasicDto[]> {
     this.logger.withContext(OwnersService.name).log('Fetching all owners (no cache)');
-    const owners = await this.prisma.owner.findMany({ include: { pets: true } });
+    const owners = await this.prisma.prismaClient.owner.findMany({ include: { pets: true } });
     this.logger
       .withContext(OwnersService.name)
       .log('[Debug] OwnerBasicDto[] for all from DB:', JSON.stringify(owners));
@@ -46,7 +46,7 @@ export class OwnersService {
     }
 
     // Use PrismaService as PrismaClient
-    const owner = await this.prisma.owner.findUnique({ where: { id }, include: { pets: true } });
+    const owner = await this.prisma.prismaClient.owner.findUnique({ where: { id }, include: { pets: true } });
     if (!owner) return null;
     this.logger
       .withContext(OwnersService.name)
@@ -88,7 +88,7 @@ export class OwnersService {
     }
     // Cache miss: query DB by lastName only
     const where: Record<string, unknown> = { lastName };
-    const owners = await this.prisma.owner.findMany({ where, include: { pets: true } });
+    const owners = await this.prisma.prismaClient.owner.findMany({ where, include: { pets: true } });
     this.logger
       .withContext(OwnersService.name)
       .log(`[Debug] OwnerBasicDto[] for ${cacheKey} from DB:`, JSON.stringify(owners));
@@ -112,7 +112,7 @@ export class OwnersService {
 
   async findFullById(id: number): Promise<OwnerFullDto | null> {
     this.logger.withContext(OwnersService.name).log(`Fetching full owner with id ${id}`);
-    const owner = await this.prisma.owner.findUnique({
+    const owner = await this.prisma.prismaClient.owner.findUnique({
       where: { id },
       include: {
         pets: {
@@ -141,7 +141,7 @@ export class OwnersService {
       .log(`Fetching full owners with lastName=${lastName}, firstName=${firstName}`);
     const where: Record<string, unknown> = { lastName };
     if (firstName) where.firstName = firstName;
-    const owners = await this.prisma.owner.findMany({
+    const owners = await this.prisma.prismaClient.owner.findMany({
       where,
       include: {
         pets: {

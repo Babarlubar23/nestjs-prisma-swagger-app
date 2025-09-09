@@ -22,7 +22,7 @@ export class CloudAuthService {
   private getScope(kind: CloudServiceKind): string[] {
     return kind === 'postgres'
       ? ['https://ossrdbms-aad.database.windows.net/.default']
-      : ['https://*.redis.cache.windows.net/.default'];
+      : ['https://redis.azure.com/.default'];
   }
 
   async getConnectionInfo(url: string, kind: CloudServiceKind): Promise<CloudConnectionInfo> {
