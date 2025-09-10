@@ -1,6 +1,7 @@
 
 import { PrismaClient } from '../../generated/client';
 import { CloudAuthService } from '../cloud-auth/cloud-auth.service';
+import { ManualPostgresSchemaMigrator } from './manual.schema-generate';
 
 async function getPrismaWithAAD() {
   // Example values, replace with your actual config or env variables
@@ -228,15 +229,19 @@ async function seedDatabase(prisma: PrismaClient) {
 }
 
 async function main() {
-  const prisma = await getPrismaWithAAD();
-  
+  let prisma: PrismaClient|null = null
+
   try {
-    await seedDatabase(prisma);
+      prisma = await getPrismaWithAAD();
+
+      const migrator = new ManualPostgresSchemaMigrator(prisma);
+      await migrator.handleCommandLineArgs();
+      await seedDatabase(prisma);
   } catch (e) {
     console.error(e);
     process.exit(1);
   } finally {
-    await prisma.$disconnect();
+    await prisma?.$disconnect();
   }
 }
 
